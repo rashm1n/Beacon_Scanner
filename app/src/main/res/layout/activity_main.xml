@@ -66,6 +66,10 @@
                 android:textSize="18sp" />
         </LinearLayout>
 
+
+
+
+
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -87,9 +91,47 @@
                 android:layout_height="wrap_content"
                 android:ems="10"
                 android:fontFamily="sans-serif-black"
-                android:inputType="textPersonName"
+                android:inputType="number"
                 android:text="" />
         </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="230dp"
+        android:layout_height="70dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/radioGroup"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout2">
+
+        <TextView
+            android:layout_marginTop="18dp"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:fontFamily="sans-serif-black"
+            android:textColor="@android:color/black"
+            android:textSize="18sp"
+            android:text="Enter Window Size"/>
+
+        <EditText
+            android:gravity="center"
+            android:id="@+id/window"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="50dp"
+            android:ems="10"
+            android:textSize="18sp"
+            android:fontFamily="sans-serif-black"
+            android:inputType="number"
+            android:text="" />
+
     </LinearLayout>
 
 
@@ -99,7 +141,7 @@
         android:layout_height="37dp"
         android:layout_gravity="center"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="76dp"
         android:gravity="center_horizontal"
         android:orientation="horizontal"
         app:layout_constraintStart_toStartOf="parent"
@@ -110,24 +152,24 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif-black"
-            android:text="Raw Data"
-            android:onClick="onRadioButtonClicked"/>
+            android:onClick="onRadioButtonClicked"
+            android:text="Raw Data" />
 
         <RadioButton
             android:id="@+id/radio_median"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif-black"
-            android:text="Median Filter"
-            android:onClick="onRadioButtonClicked"/>
+            android:onClick="onRadioButtonClicked"
+            android:text="Median Filter" />
 
         <RadioButton
             android:id="@+id/radio_mean"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif-black"
-            android:text="Mean Filter"
-            android:onClick="onRadioButtonClicked"/>
+            android:onClick="onRadioButtonClicked"
+            android:text="Mean Filter" />
     </RadioGroup>
 
     <LinearLayout
@@ -159,14 +201,24 @@
         android:id="@+id/preview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="152dp"
-        android:layout_marginTop="108dp"
-        android:text=""
+        android:layout_marginStart="204dp"
+        android:layout_marginTop="68dp"
         android:fontFamily="sans-serif-black"
+        android:text=""
         android:textColor="@android:color/black"
         android:textSize="25sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+
+    <com.jjoe64.graphview.GraphView
+        android:id="@+id/graph"
+        android:layout_width="match_parent"
+        android:layout_height="200dip"
+        android:layout_margin="15dp"
+        android:layout_marginEnd="172dp"
+        android:layout_marginBottom="108dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 
 </android.support.constraint.ConstraintLayout>

@@ -20,6 +20,9 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
 import com.opencsv.CSVWriter;
 
 import java.io.File;
@@ -27,14 +30,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Random;
-
-import org.apache.commons.collections4.queue.CircularFifoQueue;
 
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
@@ -47,14 +47,17 @@ public class MainActivity extends AppCompatActivity {
     ListAdapter_BTLE_Devices adapter;
     private Scanner_BLTE mBTLeScanner;
 
+
     Button button;
     private boolean isMedian = false;
     private boolean isMean = false;
     private boolean isRaw = false;
-
     float finalValue;
 
     Queue<Integer> queue = new LinkedList<>();
+
+
+
     List<Integer> medianarray = new ArrayList<>();
 
 
@@ -67,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
 
     EditText macaddrees;
     EditText distance;
+    EditText windowSize;
     TextView t;
     TextView preview;
 
@@ -83,6 +87,15 @@ public class MainActivity extends AppCompatActivity {
     private static final int PERMISSION_REQUEST_CODE = 200;
 
     public static String selected_MAC = " ";
+
+    // graph configugraphViewration
+    GraphView graph;
+    private LineGraphSeries<DataPoint> mSeries1;
+    public int graphCount = 0;
+
+
+
+
 
     public void onRadioButtonClicked(View view) {
         // Is the button now checked?
@@ -116,6 +129,20 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
+        windowSize = (EditText)findViewById(R.id.window);
+
+
+        //Graph Configuration
+
+        graph = (GraphView)findViewById(R.id.graph);
+        mSeries1 = new LineGraphSeries<>();
+        graph.addSeries(mSeries1);
+
+        graph.getViewport().setXAxisBoundsManual(true);
+        graph.getViewport().setMinX(0);
+        graph.getViewport().setMaxX(800);
+
         preview =(TextView)findViewById(R.id.preview);
 
         stringlist = new ArrayList();
@@ -123,6 +150,9 @@ public class MainActivity extends AppCompatActivity {
 //        movingAverage = new ArrayList();
 
 //        t = (TextView)findViewById(R.id.queue_display);
+
+
+
 
         String[] a = new String[2];
         a[0] = "raw_distance";
@@ -133,9 +163,7 @@ public class MainActivity extends AppCompatActivity {
         writeElement[1] = "rssi";
 
         //Configure the Queue For moving Average
-        for (int i=0;i<5;i++){
-            queue.add(0);
-        }
+
 
 
 
@@ -212,15 +240,29 @@ public class MainActivity extends AppCompatActivity {
 //            writeCSV(stringlist);
             writeCSV(finalValuelist);
 
-            for (String[] i:finalValuelist){
-                for (String k:i){
-                    System.out.println(k);
-                }
-            }
+
+//            DataPoint[] dataPoints = new DataPoint[finalValuelist.size()-1];
+
+
+//            for (int p =1;p<finalValuelist.size();p++){
+//                System.out.println(p);
+//                DataPoint d = new DataPoint((double)p,Double.valueOf(finalValuelist.get(p)[1]));
+//                dataPoints[p-1] = d;
+//            }
+
+//            System.out.println(dataPoints.length);
+//            for (DataPoint dataPoint:dataPoints){
+//                System.out.println(Double.toString(dataPoint.getX()));
+//                System.out.println(Double.toString(dataPoint.getY()));
+//            }
+
+//            LineGraphSeries<DataPoint> series = new LineGraphSeries<>(dataPoints);
+//            graph.addSeries(series);
 
         } catch (IOException e) {
             e.printStackTrace();
         }
+//        finalValuelist
     }
 
     public synchronized void addDevice(BluetoothDevice device, int rssi) {
@@ -229,6 +271,7 @@ public class MainActivity extends AppCompatActivity {
         String address = device.getAddress();
 
         if (!mBTDevicesHashMap.containsKey(address)) {
+            graphCount++;
             BLTE_Device btleDevice = new BLTE_Device(device);
             btleDevice.setRSSI(rssi);
             mBTDevicesHashMap.put(address, btleDevice);
@@ -270,6 +313,8 @@ public class MainActivity extends AppCompatActivity {
                 finalValue = applyMedianFilter(queue);
             }
 
+            mSeries1.appendData(new DataPoint(graphCount,finalValue), true, 1000);
+
             if (address.equals(MAC_ADDRESS)) {
                 String[] a = new String[2];
                 a[0] = distance.getText().toString();
@@ -284,14 +329,13 @@ public class MainActivity extends AppCompatActivity {
         }
         else {
 
+            graphCount++;
             adapter.notifyDataSetChanged();
             mBTDevicesHashMap.get(address).setRSSI(rssi);
 
             queue.remove();
             queue.add(rssi);
-
-
-//
+            //
 //            float avg = 0;
 //
 //            for (int i:queue){
@@ -325,6 +369,8 @@ public class MainActivity extends AppCompatActivity {
                 finalValue = applyMedianFilter(queue);
             }
 
+            mSeries1.appendData(new DataPoint(graphCount,finalValue), true, 1000);
+
             if (address.equals(MAC_ADDRESS)) {
                 String[] a = new String[2];
                 a[0] = distance.getText().toString();
@@ -340,6 +386,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startScan(){
+        for (int i=0;i<Integer.parseInt(windowSize.getText().toString());i++){
+            queue.add(0);
+        }
         mBTLeScanner.start();
     }
 

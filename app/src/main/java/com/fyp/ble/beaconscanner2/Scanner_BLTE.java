@@ -46,16 +46,16 @@ public class Scanner_BLTE {
     private synchronized void scanLeDevice(final boolean enable) {
         if (enable && !mScanning) {
 
-            // Stops scanning after a pre-defined scan period.
-            mHandler.postDelayed(new Runnable() {
-                @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
-                @Override
-                public void run() {
-                    mScanning = false;
-                    stopLE();
-                    ma.stopScan();
-                }
-            }, scanPeriod);
+//            // Stops scanning after a pre-defined scan period.
+//            mHandler.postDelayed(new Runnable() {
+//                @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
+//                @Override
+//                public void run() {
+//                    mScanning = false;
+//                    stopLE();
+//                    ma.stopScan();
+//                }
+//            }, scanPeriod);
 
             mScanning = true;
             startLE();

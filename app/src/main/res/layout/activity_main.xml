@@ -17,13 +17,11 @@
         android:text="Beacon Scanner 2.0"
         android:textColor="@android:color/black"
         android:textSize="18sp"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.023" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
         android:id="@+id/linearLayout2"
@@ -66,10 +64,6 @@
                 android:textSize="18sp" />
         </LinearLayout>
 
-
-
-
-
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -97,55 +91,86 @@
     </LinearLayout>
 
     <LinearLayout
-        android:layout_width="230dp"
-        android:layout_height="70dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
+        android:id="@+id/linearLayout4"
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:gravity="center"
         android:orientation="horizontal"
-        app:layout_constraintBottom_toTopOf="@+id/radioGroup"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:gravity="center"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout2">
 
-        <TextView
-            android:layout_marginTop="18dp"
+        <Button
+            android:id="@+id/increaseButton"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="2"
-            android:fontFamily="sans-serif-black"
-            android:textColor="@android:color/black"
-            android:textSize="18sp"
-            android:text="Enter Window Size"/>
-
-        <EditText
-            android:gravity="center"
-            android:id="@+id/window"
-            android:layout_width="0dp"
+            android:layout_gravity="center"
             android:layout_weight="1"
-            android:layout_height="50dp"
-            android:ems="10"
-            android:textSize="18sp"
-            android:fontFamily="sans-serif-black"
-            android:inputType="number"
-            android:text="" />
+            android:text="Increase Distance"
+            android:textSize="11sp" />
+
+        <Button
+            android:id="@+id/decreaseButton"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:text="Decrease Distance"
+            android:textSize="11sp" />
 
     </LinearLayout>
 
 
-    <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+    <LinearLayout
+        android:id="@+id/linearLayout3"
+        android:layout_width="223dp"
+        android:layout_height="44dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="8dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout4">
+
+        <EditText
+            android:id="@+id/window"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:ems="10"
+            android:fontFamily="sans-serif-black"
+            android:gravity="center"
+            android:inputType="number"
+            android:text=""
+            android:textSize="18sp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical"
+            android:layout_marginTop="15dp"
+            android:layout_weight="2"
+            android:fontFamily="sans-serif-black"
+            android:text="Enter Window Size"
+            android:textColor="@android:color/black"
+            android:textSize="18sp" />
+
+    </LinearLayout>
+
+    <RadioGroup
         android:id="@+id/radioGroup"
         android:layout_width="391dp"
         android:layout_height="37dp"
         android:layout_gravity="center"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="76dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="12dp"
         android:gravity="center_horizontal"
         android:orientation="horizontal"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout2">
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout3">
 
         <RadioButton
             android:id="@+id/radio_raw"
@@ -176,9 +201,11 @@
         android:id="@+id/linearLayout"
         android:layout_width="330dp"
         android:layout_height="54dp"
-        android:layout_marginStart="40dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginStart="52dp"
+        android:layout_marginTop="8dp"
         android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/radioGroup">
 
@@ -197,27 +224,47 @@
             android:text="Save" />
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/preview"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="204dp"
-        android:layout_marginTop="68dp"
-        android:fontFamily="sans-serif-black"
-        android:text=""
-        android:textColor="@android:color/black"
-        android:textSize="25sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+    <com.jjoe64.graphview.GraphView
+        android:id="@+id/graph1"
+        android:layout_width="185dp"
+        android:layout_height="195dp"
+        android:layout_margin="15dp"
+        android:layout_marginStart="28dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/graph2"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <com.jjoe64.graphview.GraphView
-        android:id="@+id/graph"
-        android:layout_width="match_parent"
-        android:layout_height="200dip"
+        android:id="@+id/graph2"
+        android:layout_width="185dp"
+        android:layout_height="197dp"
         android:layout_margin="15dp"
-        android:layout_marginEnd="172dp"
-        android:layout_marginBottom="108dp"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/graph1Text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="100dp"
+        android:layout_marginBottom="8dp"
+        android:fontFamily="sans-serif-black"
+        android:text="Raw RSSI"
+        android:textColor="@android:color/black"
+        app:layout_constraintBottom_toTopOf="@+id/graph1"
+        app:layout_constraintEnd_toStartOf="@+id/graphText2" />
+
+    <TextView
+        android:id="@+id/graphText2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="52dp"
+        android:layout_marginBottom="4dp"
+        android:fontFamily="sans-serif-black"
+        android:text="Standard Diviation"
+        android:textColor="@android:color/black"
+        app:layout_constraintBottom_toTopOf="@+id/graph2"
         app:layout_constraintEnd_toEndOf="parent" />
 
 

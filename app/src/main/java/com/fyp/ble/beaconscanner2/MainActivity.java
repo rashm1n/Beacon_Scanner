@@ -1,5 +1,7 @@
 package com.fyp.ble.beaconscanner2;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
@@ -12,6 +14,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -25,11 +28,14 @@ import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 import com.opencsv.CSVWriter;
 
+import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -47,32 +53,46 @@ public class MainActivity extends AppCompatActivity {
     ListAdapter_BTLE_Devices adapter;
     private Scanner_BLTE mBTLeScanner;
 
-
     Button button;
+    Button saveButton;
+    Button increaseDistanceButton;
+    Button decreaseDistanceButton;
+    
     private boolean isMedian = false;
     private boolean isMean = false;
     private boolean isRaw = false;
     float finalValue;
 
+    float raw_value;
+    float mean_value;
+    float median_value;
+
+
+    public boolean isScanning = false;
+    public boolean enableSave = false;
+
     Queue<Integer> queue = new LinkedList<>();
-
-
-
-    List<Integer> medianarray = new ArrayList<>();
 
 
     private ArrayList<String> itrList = new ArrayList<>();
     private ArrayList<String> macList = new ArrayList<>();
     private ArrayList<String> allValues = new ArrayList<>();
 
-    final String MAC_ADDRESS ="E8:4E:53:B5:30:EB";
-    final String MAC_F = "E7:2B:EA:2F:95:C5";
+//    final String MAC_ADDRESS ="E8:4E:53:B5:30:EB";
+//    final String MAC_ADDRESS = "E7:2B:EA:2F:95:C5";
 
     EditText macaddrees;
+
+    SimpleDateFormat formatter = new SimpleDateFormat("H:mm:ss");
+
     EditText distance;
     EditText windowSize;
     TextView t;
     TextView preview;
+    TextView stdText;
+
+    StandardDeviation standardDeviation;
+    double stdValue;
 
 
     public static int count = 0;
@@ -81,19 +101,29 @@ public class MainActivity extends AppCompatActivity {
     public List<String[]> stringlist;
     public List<String[]> finalValuelist;
 
-
     private FileWriter mFileWriter;
 
     private static final int PERMISSION_REQUEST_CODE = 200;
 
     public static String selected_MAC = " ";
+    private String m_Text = "";
 
     // graph configugraphViewration
-    GraphView graph;
+    GraphView graph1;
     private LineGraphSeries<DataPoint> mSeries1;
     public int graphCount = 0;
 
+    GraphView graph2;
+    private LineGraphSeries<DataPoint> mSeries2;
+//    public int graphCount = 0;
 
+    GraphView graph3;
+    private LineGraphSeries<DataPoint> mSeries3;
+//    public int graphCount = 0;
+
+    GraphView graph4;
+    private LineGraphSeries<DataPoint> mSeries4;
+//    public int graphCount = 0;
 
 
 
@@ -128,22 +158,54 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        macaddrees = (EditText)findViewById(R.id.mac_addr);
 
+//        stdText = (TextView)findViewById(R.id.textStdDiv);
 
+        standardDeviation = new StandardDeviation();
         windowSize = (EditText)findViewById(R.id.window);
 
+//        System.out.println(date);
 
         //Graph Configuration
 
-        graph = (GraphView)findViewById(R.id.graph);
+        graph1 = (GraphView)findViewById(R.id.graph1);
         mSeries1 = new LineGraphSeries<>();
-        graph.addSeries(mSeries1);
+        mSeries1.setTitle("RealTime RSSI Values");
+        graph1.addSeries(mSeries1);
 
-        graph.getViewport().setXAxisBoundsManual(true);
-        graph.getViewport().setMinX(0);
-        graph.getViewport().setMaxX(800);
+        graph1.getViewport().setScrollable(true);
+        graph1.getViewport().setXAxisBoundsManual(true);
+        graph1.getViewport().setMinX(0);
+        graph1.getViewport().setMaxX(100);
 
-        preview =(TextView)findViewById(R.id.preview);
+
+        graph2 = (GraphView)findViewById(R.id.graph2);
+        mSeries2 = new LineGraphSeries<>();
+        mSeries2.setTitle("RealTime RSSI Values");
+        graph2.addSeries(mSeries2);
+
+        graph2.getViewport().setScrollable(true);
+        graph2.getViewport().setXAxisBoundsManual(true);
+        graph2.getViewport().setMinX(0);
+        graph2.getViewport().setMaxX(100);
+
+
+        // activate horizontal zooming and scrolling
+//        graph.getViewport().setScalable(true);
+
+// activate horizontal scrolling
+
+
+// activate horizontal and vertical zooming and scrolling
+//        graph.getViewport().setScalableY(true);
+
+// activate vertical scrolling
+//        graph.getViewport().setScrollableY(true);
+
+
+
+//        preview =(TextView)findViewById(R.id.preview);
 
         stringlist = new ArrayList();
         finalValuelist = new ArrayList<>();
@@ -158,16 +220,14 @@ public class MainActivity extends AppCompatActivity {
         a[0] = "raw_distance";
         a[1] = "raw_rssi";
 
-        String[] writeElement = new String[2];
+        String[] writeElement = new String[5];
         writeElement[0] = "distance";
-        writeElement[1] = "rssi";
+        writeElement[1] = "raw_rssi";
+        writeElement[2] = "mean_rssi";
+        writeElement[3] = "standard_deviation";
+        writeElement[4] = "time";
 
         //Configure the Queue For moving Average
-
-
-
-
-
 
         //Create Header of the File
         stringlist.add(a);
@@ -185,7 +245,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        macaddrees = (EditText)findViewById(R.id.mac_addr);
+
         distance = (EditText)findViewById(R.id.distance);
 
         int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
@@ -215,6 +275,35 @@ public class MainActivity extends AppCompatActivity {
         adapter = new ListAdapter_BTLE_Devices(MainActivity.this, R.layout.btle_device_list_item, mBTDevicesArrayList);
 
         button = (Button)findViewById(R.id.start_button);
+        saveButton = (Button)findViewById(R.id.save_button);
+        increaseDistanceButton = (Button)findViewById(R.id.increaseButton);
+        decreaseDistanceButton = (Button)findViewById(R.id.decreaseButton);
+
+        increaseDistanceButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int p = Integer.parseInt(distance.getText().toString());
+                p++;
+                distance.setText(Integer.toString(p));
+            }
+        });
+
+
+        decreaseDistanceButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int p = Integer.parseInt(distance.getText().toString());
+                p--;
+                distance.setText(Integer.toString(p));
+            }
+        });
+
+
+        saveButton.setEnabled(enableSave);
+
+        if (!isScanning){
+            button.setText("Start");
+        }
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -225,10 +314,23 @@ public class MainActivity extends AppCompatActivity {
                     itrList.clear();
                     allValues.clear();
                     startScan();
+                    isScanning = true;
+                    button.setText("Stop");
                 }
                 else {
                     stopScan();
+                    isScanning = false;
+                    button.setText("Start");
+                    enableSave = true;
+                    saveButton.setEnabled(enableSave);
                 }
+            }
+        });
+
+        saveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                saveFile();
             }
         });
     }
@@ -236,9 +338,25 @@ public class MainActivity extends AppCompatActivity {
 
     public synchronized void stopScan() {
         mBTLeScanner.stop();
-        try {
+//        finalValuelist
+    }
+
+    public synchronized void saveFile(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Input File Name");
+        final EditText input = new EditText(this);
+
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                m_Text = input.getText().toString();
+
+                try {
 //            writeCSV(stringlist);
-            writeCSV(finalValuelist);
+                    writeCSV(finalValuelist);
 
 
 //            DataPoint[] dataPoints = new DataPoint[finalValuelist.size()-1];
@@ -259,10 +377,21 @@ public class MainActivity extends AppCompatActivity {
 //            LineGraphSeries<DataPoint> series = new LineGraphSeries<>(dataPoints);
 //            graph.addSeries(series);
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-//        finalValuelist
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        });
+
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
     }
 
     public synchronized void addDevice(BluetoothDevice device, int rssi) {
@@ -282,6 +411,8 @@ public class MainActivity extends AppCompatActivity {
             queue.remove();
             queue.add(rssi);
 
+
+//            stdText.setText(Double.toString(stdValue));
 
 //            float avg = 0;
 
@@ -313,14 +444,31 @@ public class MainActivity extends AppCompatActivity {
                 finalValue = applyMedianFilter(queue);
             }
 
-            mSeries1.appendData(new DataPoint(graphCount,finalValue), true, 1000);
+            raw_value = (float)rssi;
+            mean_value = applyMeanFilter(queue);
+            median_value = applyMedianFilter(queue);
+            stdValue = getStandardDeviation(queue,Integer.parseInt(windowSize.getText().toString()));
+            Date date = new Date();
 
-            if (address.equals(MAC_ADDRESS)) {
-                String[] a = new String[2];
+
+
+
+
+            if (graphCount>Integer.parseInt(windowSize.getText().toString())){
+                mSeries1.appendData(new DataPoint(graphCount,raw_value), true, 1000);
+                mSeries2.appendData(new DataPoint(graphCount,(float)stdValue), true, 1000);
+            }
+
+            if (address.equals(macaddrees.getText().toString())) {
+                String[] a = new String[5];
                 a[0] = distance.getText().toString();
+                a[1] = Float.toString(raw_value);
+                a[2] = Float.toString(mean_value);
+                a[3] = Float.toString((float) stdValue);
+                a[4] = formatter.format(date).toString();
 //              a[1] = Integer.toString(rssi);
-                a[1] = Float.toString(finalValue);
-                preview.setText(a[1]);
+//                a[1] = Float.toString(finalValue);
+//                preview.setText(a[1]);
 //                stringlist.add(a);
                 finalValuelist.add(a);
             }
@@ -361,6 +509,9 @@ public class MainActivity extends AppCompatActivity {
 //            r = Math.pow(10.0,(-76.57-avg)/20);
 //            movingAverage.add((float)r);
 
+//            stdValue = getStandardDeviation(queue,Integer.parseInt(windowSize.getText().toString()));
+//            stdText.setText(Double.toString(stdValue));
+
             if (isRaw & !isMean & !isMedian){
                 finalValue = (float) rssi;
             }else if (!isRaw & isMean & !isMedian){
@@ -369,14 +520,30 @@ public class MainActivity extends AppCompatActivity {
                 finalValue = applyMedianFilter(queue);
             }
 
-            mSeries1.appendData(new DataPoint(graphCount,finalValue), true, 1000);
+            raw_value = (float)rssi;
+            mean_value = applyMeanFilter(queue);
+            median_value = applyMedianFilter(queue);
+            Date date = new Date();
+            stdValue = getStandardDeviation(queue,Integer.parseInt(windowSize.getText().toString()));
 
-            if (address.equals(MAC_ADDRESS)) {
-                String[] a = new String[2];
+            if (graphCount>Integer.parseInt(windowSize.getText().toString())){
+                mSeries1.appendData(new DataPoint(graphCount,raw_value), true, 1000);
+                mSeries2.appendData(new DataPoint(graphCount,(float)stdValue), true, 1000);
+            }
+
+
+
+            if (address.equals(macaddrees.getText().toString()))
+            {
+                String[] a = new String[5];
                 a[0] = distance.getText().toString();
+                a[1] = Float.toString(raw_value);
+                a[2] = Float.toString(mean_value);
+                a[3] = Float.toString((float) stdValue);
+                a[4] = formatter.format(date).toString();
 //              a[1] = Integer.toString(rssi);
-                a[1] = Float.toString(finalValue);
-                preview.setText(a[1]);
+//                a[1] = Float.toString(finalValue);
+//                preview.setText(a[1]);
 //                stringlist.add(a);
                 finalValuelist.add(a);
             }
@@ -408,7 +575,7 @@ public class MainActivity extends AppCompatActivity {
         Random r = new Random();
         String baseDir = android.os.Environment.getExternalStorageDirectory().getAbsolutePath();
         Log.d("Write",baseDir);
-        String fileName = topic+"RSSIData_"+Integer.toString(r.nextInt(1000))+".csv";
+        String fileName = m_Text+topic+".csv";
         String filePath = baseDir + File.separator + fileName;
         File f = new File(filePath);
         CSVWriter writer;
@@ -522,5 +689,21 @@ public class MainActivity extends AppCompatActivity {
             median = (double) numArray[numArray.length/2];
 
         return (float)median;
+    }
+
+    private double getStandardDeviation(Queue<Integer> numQueue,int windowLength){
+//      Integer.parseInt(windowSize.getText().toString())
+        double[] stdArray = new double[windowLength];
+
+        int k = 0;
+        for (int i:numQueue){
+            double val = (double)i;
+            stdArray[k] = val;
+            k++;
+        }
+
+        double std = standardDeviation.evaluate(stdArray);
+
+        return std;
     }
 }

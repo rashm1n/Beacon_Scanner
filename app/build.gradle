@@ -22,6 +22,10 @@ dependencies {
     // https://mvnrepository.com/artifact/org.apache.commons/commons-math3
     implementation group: 'org.apache.commons', name: 'commons-math3', version: '3.0'
 
+    // https://mvnrepository.com/artifact/colt/colt
+    implementation group: 'colt', name: 'colt', version: '1.2.0'
+
+//    implementation 'org.tensorflow:tensorflow-lite:0.0.0-nightly'
     implementation 'com.jjoe64:graphview:4.2.2'
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
     implementation 'com.opencsv:opencsv:4.6'

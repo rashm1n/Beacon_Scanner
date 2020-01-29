@@ -1,7 +1,6 @@
 package com.fyp.ble.beaconscanner2;
 
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
@@ -66,6 +65,9 @@ public class MainActivity extends AppCompatActivity {
     float raw_value;
     float mean_value;
     float median_value;
+
+    //Kalman Filter
+    public KalmanFilter kalmanFilter;
 
 
     public boolean isScanning = false;
@@ -162,6 +164,8 @@ public class MainActivity extends AppCompatActivity {
 
 //        stdText = (TextView)findViewById(R.id.textStdDiv);
 
+        kalmanFilter = new KalmanFilter(0.008,1);
+
         standardDeviation = new StandardDeviation();
         windowSize = (EditText)findViewById(R.id.window);
 
@@ -192,16 +196,16 @@ public class MainActivity extends AppCompatActivity {
 
 
         // activate horizontal zooming and scrolling
-//        graph.getViewport().setScalable(true);
+        // graph.getViewport().setScalable(true);
 
-// activate horizontal scrolling
+        // activate horizontal scrolling
 
 
-// activate horizontal and vertical zooming and scrolling
-//        graph.getViewport().setScalableY(true);
+        // activate horizontal and vertical zooming and scrolling
+        // graph.getViewport().setScalableY(true);
 
-// activate vertical scrolling
-//        graph.getViewport().setScrollableY(true);
+        // activate vertical scrolling
+        // graph.getViewport().setScrollableY(true);
 
 
 
@@ -213,19 +217,18 @@ public class MainActivity extends AppCompatActivity {
 
 //        t = (TextView)findViewById(R.id.queue_display);
 
-
-
-
         String[] a = new String[2];
         a[0] = "raw_distance";
         a[1] = "raw_rssi";
 
-        String[] writeElement = new String[5];
+        String[] writeElement = new String[7];
         writeElement[0] = "distance";
         writeElement[1] = "raw_rssi";
         writeElement[2] = "mean_rssi";
-        writeElement[3] = "standard_deviation";
-        writeElement[4] = "time";
+        writeElement[3] = "median_rssi";
+        writeElement[4] = "standard_deviation";
+        writeElement[5] = "kalman filtered";
+        writeElement[6] = "time";
 
         //Configure the Queue For moving Average
 
@@ -244,7 +247,6 @@ public class MainActivity extends AppCompatActivity {
                 openActivity();
             }
         }
-
 
         distance = (EditText)findViewById(R.id.distance);
 
@@ -292,9 +294,15 @@ public class MainActivity extends AppCompatActivity {
         decreaseDistanceButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int p = Integer.parseInt(distance.getText().toString());
-                p--;
-                distance.setText(Integer.toString(p));
+                double p = Double.parseDouble(distance.getText().toString());
+
+                if (p<=2.0 && p!=1){
+                    p = p-0.5;
+                }else{
+                    p = p- 1.0;
+                }
+
+                distance.setText(Double.toString(p));
             }
         });
 
@@ -408,8 +416,11 @@ public class MainActivity extends AppCompatActivity {
 
 //            data = editString(data,"23",Integer.toString(rssi));
 
-            queue.remove();
+            queue.poll();
+
             queue.add(rssi);
+
+            double convertedValue = kalmanFilter.filter(rssi);
 
 
 //            stdText.setText(Double.toString(stdValue));
@@ -456,16 +467,18 @@ public class MainActivity extends AppCompatActivity {
 
             if (graphCount>Integer.parseInt(windowSize.getText().toString())){
                 mSeries1.appendData(new DataPoint(graphCount,raw_value), true, 1000);
-                mSeries2.appendData(new DataPoint(graphCount,(float)stdValue), true, 1000);
+                mSeries2.appendData(new DataPoint(graphCount,pathLossEquation(convertedValue)), true, 1000);
             }
 
             if (address.equals(macaddrees.getText().toString())) {
-                String[] a = new String[5];
+                String[] a = new String[7];
                 a[0] = distance.getText().toString();
                 a[1] = Float.toString(raw_value);
                 a[2] = Float.toString(mean_value);
-                a[3] = Float.toString((float) stdValue);
-                a[4] = formatter.format(date).toString();
+                a[3] = Float.toString(median_value);
+                a[4] = Float.toString((float) stdValue);
+                a[5] = Double.toString(convertedValue);
+                a[6] = formatter.format(date).toString();
 //              a[1] = Integer.toString(rssi);
 //                a[1] = Float.toString(finalValue);
 //                preview.setText(a[1]);
@@ -481,8 +494,9 @@ public class MainActivity extends AppCompatActivity {
             adapter.notifyDataSetChanged();
             mBTDevicesHashMap.get(address).setRSSI(rssi);
 
-            queue.remove();
+            queue.poll();
             queue.add(rssi);
+            double convertedValue = kalmanFilter.filter(rssi);
             //
 //            float avg = 0;
 //
@@ -526,21 +540,24 @@ public class MainActivity extends AppCompatActivity {
             Date date = new Date();
             stdValue = getStandardDeviation(queue,Integer.parseInt(windowSize.getText().toString()));
 
+
             if (graphCount>Integer.parseInt(windowSize.getText().toString())){
                 mSeries1.appendData(new DataPoint(graphCount,raw_value), true, 1000);
-                mSeries2.appendData(new DataPoint(graphCount,(float)stdValue), true, 1000);
+                mSeries2.appendData(new DataPoint(graphCount,pathLossEquation(convertedValue)), true, 1000);
             }
 
 
 
             if (address.equals(macaddrees.getText().toString()))
             {
-                String[] a = new String[5];
+                String[] a = new String[7];
                 a[0] = distance.getText().toString();
                 a[1] = Float.toString(raw_value);
                 a[2] = Float.toString(mean_value);
-                a[3] = Float.toString((float) stdValue);
-                a[4] = formatter.format(date).toString();
+                a[3] = Float.toString(median_value);
+                a[4] = Float.toString((float) stdValue);
+                a[5] = Double.toString(convertedValue);
+                a[6] = formatter.format(date).toString();
 //              a[1] = Integer.toString(rssi);
 //                a[1] = Float.toString(finalValue);
 //                preview.setText(a[1]);
@@ -601,18 +618,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
     private boolean checkPermission() {
 
         return ContextCompat.checkSelfPermission(this, WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
@@ -621,6 +626,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void openActivity() {
+
         //add your further process after giving permission or to download images from remote server.
     }
 
@@ -666,6 +672,11 @@ public class MainActivity extends AppCompatActivity {
 //            movingAverage.add((float)r);
 
             return avg;
+    }
+
+    private float pathLossEquation(double val){
+        double result = Math.pow(10,(-73.68-val)/20);
+        return (float)result;
     }
 
     private float applyMedianFilter(Queue<Integer> queue){

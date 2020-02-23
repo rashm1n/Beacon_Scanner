@@ -82,7 +82,7 @@ public class Scanner_BLTE {
                 @Override
                 public synchronized void onLeScan(final BluetoothDevice device, int rssi, final byte[] scanRecord) {
                     final int new_rssi = rssi;
-                    if ((rssi > signalStrength) && device.getAddress().equals(MainActivity.selected_MAC)) {
+                    if ((rssi > signalStrength) && (device.getAddress().equals(MainActivity.selected_MAC))) {
                         mHandler.post(new Runnable() {
                             @Override
                             public void run() {

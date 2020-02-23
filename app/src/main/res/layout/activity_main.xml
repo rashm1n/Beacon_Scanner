@@ -70,14 +70,12 @@
             android:layout_weight="2"
             android:orientation="vertical">
 
-            <EditText
-                android:id="@+id/mac_addr"
+            <Spinner
+                android:id="@+id/spinner1"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:fontFamily="sans-serif-black"
-                android:inputType="textPersonName"
-                android:text="" />
+                android:layout_height="50dp"
+                android:background="@android:drawable/btn_dropdown"
+                android:spinnerMode="dropdown"/>
 
             <EditText
                 android:id="@+id/distance"
@@ -86,14 +84,14 @@
                 android:ems="10"
                 android:fontFamily="sans-serif-black"
                 android:inputType="numberDecimal"
-                android:text="" />ra
+                android:text="" />
         </LinearLayout>
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/linearLayout4"
-        android:layout_width="200dp"
-        android:layout_height="50dp"
+        android:layout_width="250dp"
+        android:layout_height="60dp"
         android:gravity="center"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
@@ -106,8 +104,8 @@
             android:layout_height="match_parent"
             android:layout_gravity="center"
             android:layout_weight="1"
-            android:text="Increase Distance"
-            android:textSize="11sp" />
+            android:text="Increase"
+            android:textSize="10sp" />
 
         <Button
             android:id="@+id/decreaseButton"
@@ -115,8 +113,16 @@
             android:layout_height="match_parent"
             android:layout_gravity="center"
             android:layout_weight="1"
-            android:text="Decrease Distance"
-            android:textSize="11sp" />
+            android:text="Decrease"
+            android:textSize="10sp" />
+
+        <TextView
+            android:id="@+id/multipathcount"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="@android:color/black"
+            android:text="" />
 
     </LinearLayout>
 
